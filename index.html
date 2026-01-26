@@ -13,64 +13,51 @@
         
         body {
             font-family: 'Charter';
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            padding: 10px;
+            align-items: center;
+            padding: 20px;
             background: #f5f5f5;
         }
         
-        h1 {
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 1.5rem;
-            color: #333;
-        }
-        
         .container {
+            width: 100%;
+            max-width: 110vh;
+            min-height: 0;
+            aspect-ratio: 4 / 3;
             display: flex;
-            flex: 1;
-            flex-direction: column;
-            gap: 10px;
-            height: fit-content;
-            max-height: 90%;
-            margin: 0 auto;
-        }
-        
-        @media (min-width: 768px) {
-            .container {
-                flex-direction: row;
-            }
+            flex-direction: row;
+            margin-top: 30px;
         }
         
         .canvas-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: 100%;
+            aspect-ratio: 1;
             padding: 10px;
-            aspect-ratio: 2 / 3;
+
+            overflow: hidden;
+            flex: 1;
+            min-width: 0;
         }
         
         canvas {
-            max-width: 100%;
+            width: 100%;
             max-height: 100%;
+            aspect-ratio: 1 / 1;
             display: block;
-            background: white;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
         
         .menu-container {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            aspect-ratio: 1 / 3;
+            height: 100%;
             padding: 10px;
+
             display: flex;
             flex-direction: column;
-            max-width: 40%;
+            overflow: hidden;
         }
         
         .menu-title {
@@ -81,52 +68,85 @@
             padding-bottom: 5px;
             border-bottom: 1px solid #eee;
         }
+
+        .scroll-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        
+        /* Scrollbar styling */
+        .scroll-container::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        
+        .scroll-container::-webkit-scrollbar-track {
+            background: #ddd;
+            border-radius: 8px;
+        }
+        
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: #aaa;
+            border-radius: 8px;
+        }
         
         .image-menu {
-            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding: 5px;
+            width: fit-content;
+            gap: 10px;
+            padding: 10px;
         }
-        
-        @media (max-width: 768px) {
-            .canvas-container {
-                max-height: 70%;
-            }
 
-            .menu-container {
-                max-width: 100%;
-                max-height: 30%;
-            }
-
-            .image-menu {
-                flex-direction: row;
-            }
-        }
-        
         .menu-item {
             aspect-ratio: 1;
+            width: 100%;
             border-radius: 6px;
             overflow: hidden;
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.2s;
-            max-width: 100%;
-            max-height: 100%;
         }
-        
+
         .menu-item:hover, .menu-item:active {
             border-color: #4a90e2;
             transform: scale(1.03);
         }
         
-        /*.menu-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }*/
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                
+                min-width: 0;
+                aspect-ratio: auto;
+            }
+
+            .canvas-container {
+                width: 100%;
+                height: auto;
+            }
+
+            .menu-container {
+                width: 100%;
+                height: 300px;
+            }
+
+            .scroll-container {
+                overflow-x: auto;
+                overflow-y: hidden;
+            }
+
+            .image-menu {
+                flex-direction: row;
+                height: 100%;
+            }
+
+            .menu-item {
+                height: 100%;
+                width: auto;
+            }
+        }
         
         .controls {
             display: flex;
@@ -158,21 +178,6 @@
         .clear-btn:hover {
             background: #c0392b;
         }
-        
-        /* Simple scrollbar styling */
-        .image-menu::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .image-menu::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        .image-menu::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 10px;
-        }
     </style>
 </head>
 <body>
@@ -185,8 +190,10 @@
         
         <div class="menu-container">
             <div class="menu-title">Одежда</div>
-            <div class="image-menu" id="imageMenu">
-                <!-- Images will be added here by JavaScript -->
+            <div class="scroll-container">
+                <div class="image-menu" id="imageMenu">
+                    <!-- Images will be added here by JavaScript -->
+                </div>
             </div>
             <div class="controls">
                 <button id="clearBtn" class="clear-btn">Очистить</button>
@@ -203,64 +210,79 @@
         const clearBtn = document.getElementById('clearBtn');
         // const saveBtn = document.getElementById('saveBtn');
         
-        // Set canvas size to match container
         function resizeCanvas() {
             const container = canvas.parentElement;
-            canvas.width = container.clientWidth - 20; // Account for padding
-            canvas.height = container.clientHeight - 20;
-            
-            // Redraw any existing content if needed
-            redrawCanvas();
+            const newSize = (container.clientWidth - 20) * 2;
+            if (newSize != canvas.width) {
+                canvas.width = newSize;
+                canvas.height = newSize;
+                
+                redrawCanvas();
+            }
         }
         
-        // Initial canvas resize
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         
-        // Draw initial content on canvas
         function initializeCanvas() {
-            // Clear with white background
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            startImage = new Image();
-            startImage.src = 'assets/start.png';
-            startImage.onload = function(){
-                ctx.drawImage(startImage, 100, 150);
-            }
+            addImage('assets/back.png');
+            addImage('assets/start.png');
         }
         
-        // Redraw the canvas (for resize events)
         function redrawCanvas() {
-            // For this simple example, just reinitialize
             initializeCanvas();
         }
 
-        const pics = ['assets/example1.png', 'assets/example2.png'];
+        function addImage(src) {
+            const img = new Image();
+            // img.crossOrigin = 'anonymous'; // For handling cross-origin images if needed
+            img.onload = function() {
+                const canvasAspect = 2 / 3;
+                const imgAspect = img.width / img.height;
+                let scale, width, height, x, y;
+                
+                scale = canvas.width / img.width;
+                width = canvas.width;
+                height = img.height * scale;
+                x = 0;
+                y = -(height - canvas.height) / 2;
+                
+                ctx.drawImage(img, x, y, width, height);
+            };
+            
+            img.onerror = function() {
+                console.error('Failed to load image:', src);
+            };
+            
+            img.src = src;
+        }
+
+        const items = new Map();
+        items.set('assets/example1icon.png', 'assets/example1full.png');
+        items.set('assets/example2icon.png', 'assets/example2full.png');
+        items.set('assets/example3icon.png', 'assets/example3full.png');
+        items.set('assets/example4icon.png', 'assets/example4full.png');
         
-        pics.forEach(pic => {
+        items.forEach((value, key) => {
             const menuItem = document.createElement('img');
             menuItem.className = 'menu-item';
 
-            menuItem.src = pic;
+            menuItem.src = key;
+            menuItem.id = key;
             imageMenu.appendChild(menuItem);
         });
         
-        // Handle click on menu items
         imageMenu.addEventListener('click', (e) => {
-            // Find the clicked menu item
             let menuItem = e.target.closest('.menu-item');
             
             if (menuItem) {
-                base_image = new Image();
-                base_image.src = menuItem.src;
-                base_image.onload = function(){
-                    ctx.drawImage(base_image, 0, 30);
-                }
+                addImage(items.get(menuItem.id));
             }
         });
         
-        // Clear canvas button
         clearBtn.addEventListener('click', () => {
             initializeCanvas();
         });

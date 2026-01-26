@@ -228,15 +228,14 @@
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            addImage('assets/back.png');
-            addImage('assets/start.png');
+            addImage('assets/back.png', () => { addImage('assets/start.png'); });
         }
         
         function redrawCanvas() {
             initializeCanvas();
         }
 
-        function addImage(src) {
+        function addImage(src, callback) {
             const img = new Image();
             // img.crossOrigin = 'anonymous'; // For handling cross-origin images if needed
             img.onload = function() {
@@ -251,6 +250,8 @@
                 y = -(height - canvas.height) / 2;
                 
                 ctx.drawImage(img, x, y, width, height);
+
+                callback();
             };
             
             img.onerror = function() {

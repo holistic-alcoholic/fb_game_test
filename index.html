@@ -31,7 +31,7 @@
             margin-top: 30px;
         }
         
-        .canvas-container {
+        .costume-container {
             height: 100%;
             aspect-ratio: 1;
             padding: 10px;
@@ -39,6 +39,23 @@
             overflow: hidden;
             flex: 1;
             min-width: 0;
+            position: relative;
+
+            border-radius: 6px;
+        }
+
+        .image-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .visible {
+            opacity: 1;
         }
         
         canvas {
@@ -66,7 +83,27 @@
             text-align: center;
             color: #444;
             padding-bottom: 5px;
-            border-bottom: 1px solid #eee;
+            font-weight: bold;
+        }
+
+        select, ::picker(select) {
+            appearance: base-select;
+        }
+
+        select {
+            padding: 10px 15px;
+            font-family: 'Charter';
+            border-color: #666;
+            margin-bottom: 10px;
+        }
+
+        ::picker(select) {
+            border-color: #666;
+            border-radius: 8px;
+        }
+
+        option {
+            padding: 10px;
         }
 
         .scroll-container {
@@ -107,6 +144,16 @@
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.2s;
+            display: none;
+        }
+
+        .menu-item-visible {
+            display: block;
+        }
+
+        .menu-item-chosen {
+            border-color: #4a90e2;
+            background-color: rgba(74, 144, 226, 0.2);
         }
 
         .menu-item:hover, .menu-item:active {
@@ -184,15 +231,25 @@
     <h1>Одевалка</h1>
     
     <div class="container">
-        <div class="canvas-container">
-            <canvas id="drawingCanvas"></canvas>
+        <div class="costume-container" id="costumeContainer">
         </div>
         
         <div class="menu-container">
             <div class="menu-title">Одежда</div>
+
+            <select name="clothes-type" id="clothesTypeSelect">
+              <option value="undies">Белье</option>
+              <option value="shirts">Верх</option>
+              <option value="pants">Низ</option>
+              <option value="shoes">Обувь</option>
+              <option value="dresses">Платья</option>
+              <option value="outerwear">Верхняя одежда</option>
+              <option value="hair">Прически</option>
+              <option value="accessories">Аксессуары</option>
+            </select>
+
             <div class="scroll-container">
                 <div class="image-menu" id="imageMenu">
-                    <!-- Images will be added here by JavaScript -->
                 </div>
             </div>
             <div class="controls">
@@ -203,89 +260,159 @@
     </div>
 
     <script>
-        // Canvas setup
-        const canvas = document.getElementById('drawingCanvas');
-        const ctx = canvas.getContext('2d');
+        const costumeContainer = document.getElementById('costumeContainer');
         const imageMenu = document.getElementById('imageMenu');
         const clearBtn = document.getElementById('clearBtn');
         // const saveBtn = document.getElementById('saveBtn');
-        
-        function resizeCanvas() {
-            const container = canvas.parentElement;
-            const newSize = (container.clientWidth - 20) * 2;
-            if (newSize != canvas.width) {
-                canvas.width = newSize;
-                canvas.height = newSize;
-                
-                redrawCanvas();
+
+        const clothesTypeSelect = document.getElementById('clothesTypeSelect');
+
+        clothesTypeSelect.addEventListener("change", (event) => {
+            setupClothesType(event.target.value);
+        });
+
+        let accessories = [];
+        let shirts = [];
+        let pants = [];
+        let undies = [];
+        let shoes = [];
+        let dresses = [];
+        let outerwear = [];
+        let hair = [];
+        let clothes = [];
+
+        let currentZ = 1;
+
+        initializePictures();
+
+        function setupPicture(picID, base = false) {
+            const element = document.createElement("img");
+            element.src = picID + '.png';
+            element.id = picID;
+            element.loading = 'lazy';
+            element.classList.add('image-layer');
+
+            costumeContainer.appendChild(element);
+
+            if (base) {
+                element.classList.add('visible');
+
+                return;
             }
-        }
-        
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        
-        function initializeCanvas() {
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            addImage('assets/back.png', () => { addImage('assets/start.png'); });
-        }
-        
-        function redrawCanvas() {
-            initializeCanvas();
-        }
-
-        function addImage(src, callback) {
-            const img = new Image();
-            // img.crossOrigin = 'anonymous'; // For handling cross-origin images if needed
-            img.onload = function() {
-                const canvasAspect = 2 / 3;
-                const imgAspect = img.width / img.height;
-                let scale, width, height, x, y;
-                
-                scale = canvas.width / img.width;
-                width = canvas.width;
-                height = img.height * scale;
-                x = 0;
-                y = -(height - canvas.height) / 2;
-                
-                ctx.drawImage(img, x, y, width, height);
-
-                callback();
-            };
-            
-            img.onerror = function() {
-                console.error('Failed to load image:', src);
-            };
-            
-            img.src = src;
-        }
-
-        const items = new Map();
-        items.set('assets/example1icon.png', 'assets/example1full.png');
-        items.set('assets/example2icon.png', 'assets/example2full.png');
-        items.set('assets/example3icon.png', 'assets/example3full.png');
-        items.set('assets/example4icon.png', 'assets/example4full.png');
-        
-        items.forEach((value, key) => {
             const menuItem = document.createElement('img');
             menuItem.className = 'menu-item';
+            menuItem.src = picID + 'mini.png';
+            menuItem.id = picID + 'mini';
+            menuItem.loading = 'lazy';
 
-            menuItem.src = key;
-            menuItem.id = key;
             imageMenu.appendChild(menuItem);
-        });
-        
-        imageMenu.addEventListener('click', (e) => {
-            let menuItem = e.target.closest('.menu-item');
-            
-            if (menuItem) {
-                addImage(items.get(menuItem.id));
+
+            clothes.push(picID);
+
+            return picID;
+        }
+
+        function setupClothesType(type) {
+            for (let pic of clothes) {
+                if (pic.includes(type)) {
+                    document.getElementById(pic + 'mini').classList.add('menu-item-visible');
+                } else {
+                    document.getElementById(pic + 'mini').classList.remove('menu-item-visible');
+                }
             }
-        });
+        }
+
+        function initializePictures() {
+            setupPicture('assets/back', true);
+            setupPicture('assets/start', true);
+            
+            for (let i = 0; i < 1; i++) {
+                accessories.push(setupPicture(`assets/accessories${i + 1}`));
+            }
+            for (let i = 0; i < 0; i++) {
+                dresses.push(setupPicture(`assets/dresses${i + 1}`));
+            }
+            for (let i = 0; i < 2; i++) {
+                hair.push(setupPicture(`assets/hair${i + 1}`));
+            }
+            for (let i = 0; i < 0; i++) {
+                outerwear.push(setupPicture(`assets/outerwear${i + 1}`));
+            }
+            for (let i = 0; i < 2; i++) {
+                pants.push(setupPicture(`assets/pants${i + 1}`));
+            }
+            for (let i = 0; i < 1; i++) {
+                shirts.push(setupPicture(`assets/shirts${i + 1}`));
+            }
+            for (let i = 0; i < 1; i++) {
+                shoes.push(setupPicture(`assets/shoes${i + 1}`));
+            }
+            for (let i = 0; i < 3; i++) {
+                undies.push(setupPicture(`assets/undies${i + 1}`));
+            }
+
+            // шляпа
+            document.getElementById('assets/accessories1').style['z-index'] = currentZ + 10;
+
+            // defaults
+            setupClothesType('undies');
+            document.getElementById('assets/hair1').classList.add('visible');
+            document.getElementById('assets/hair1mini').classList.add('menu-item-chosen');
+
+            imageMenu.addEventListener('click', (e) => {
+                let menuItem = e.target.closest('.menu-item');
+                
+                if (menuItem) {
+                    const mainPic = document.getElementById(menuItem.id.slice(0, -4));
+                    if (mainPic.className.includes('visible')) {
+                        mainPic.classList.remove('visible');
+
+                        menuItem.classList.remove('menu-item-chosen');
+
+                        if (menuItem.id.includes('hair')) {
+                            document.getElementById('assets/hair1').classList.add('visible');
+                            document.getElementById('assets/hair1mini').classList.add('menu-item-chosen');
+                        }
+                    } else {
+                        if (menuItem.id.includes('hair')) {
+                            // чистим
+                            for (let hairID of hair) {
+                                document.getElementById(hairID).classList.remove('visible');
+                                document.getElementById(hairID + 'mini').classList.remove('menu-item-chosen');
+                            }
+                        }
+
+                        mainPic.classList.add('visible');
+
+                        if (!menuItem.id.includes('undies')) {
+                            mainPic.style['z-index'] = currentZ + 1;
+                            currentZ++;
+                            document.getElementById('assets/accessories1').style['z-index'] = currentZ + 10;
+                        }
+
+                        menuItem.classList.add('menu-item-chosen');
+                    }
+                }
+            });
+        }
         
         clearBtn.addEventListener('click', () => {
-            initializeCanvas();
+            for (let pic of clothes) {
+                // clothes
+                document.getElementById(pic).classList.remove('visible');
+
+                // chosen
+                document.getElementById(pic + 'mini').classList.remove('menu-item-chosen');
+
+                // z-index
+                document.getElementById(pic).style['z-index'] = 1;
+                currentZ = 1;
+            }
+
+            document.getElementById('assets/hair1').classList.add('visible');
+            document.getElementById('assets/hair1mini').classList.add('menu-item-chosen');
+            document.getElementById('assets/accessories1').style['z-index'] = currentZ + 10;
         });
         
         // Save canvas as image
@@ -297,15 +424,13 @@
         //     link.click();
         // });
         
-        // Touch support for mobile
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            // For mobile, we could add touch drawing functionality here
-            // For simplicity, we'll just keep the menu-based drawing
-        });
+        // // Touch support for mobile
+        // canvas.addEventListener('touchstart', (e) => {
+        //     e.preventDefault();
+        // });
         
         // Initialize the canvas with default content
-        initializeCanvas();
+        // initializeCanvas();
     </script>
 </body>
 </html>

@@ -339,7 +339,7 @@
                     document.getElementById(picID).style['z-index'] = 500; // шляпа сверху всего
                 }
                 if (i === 2) {
-                    document.getElementById(picID).style['z-index'] = 150; // кулон на одежде
+                    document.getElementById(picID).style['z-index'] = 160; // кулон на одежде
                 }
             }
             for (let i = 0; i < 4; i++) {
@@ -352,7 +352,7 @@
                 picID = setupPicture(`assets/dresses${i + 1}`);
                 dresses.push(picID);
 
-                document.getElementById(picID).style['z-index'] = 100; // под кофтами
+                document.getElementById(picID).style['z-index'] = 110; // под кофтами
             }
             for (let i = 0; i < 2; i++) {
                 picID = setupPicture(`assets/hair${i + 1}`);
@@ -424,7 +424,7 @@
                             document.getElementById('assets/hair1mini').classList.add('menu-item-chosen');
                         }
                     } else {
-                        if (menuItem.id.includes('hair7')) {
+                        if (menuItem.id.includes('hair')) {
                             // чистим прически
                             for (let hairID of hair) {
                                 document.getElementById(hairID).classList.remove('visible');
@@ -461,6 +461,10 @@
                             for (let pantsID of pants) {
                                 document.getElementById(pantsID).classList.remove('visible');
                                 document.getElementById(pantsID + 'mini').classList.remove('menu-item-chosen');
+                            }
+                            for (let dress of dresses) {
+                                document.getElementById(dress).classList.remove('visible');
+                                document.getElementById(dress + 'mini').classList.remove('menu-item-chosen');
                             }
                         }
 

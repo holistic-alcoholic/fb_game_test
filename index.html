@@ -623,11 +623,13 @@
 
         function clearClothes() {
             for (let pic of clothes) {
-                // clothes
-                document.getElementById(pic).classList.remove('visible');
+                if (!pic.includes('back')) {
+                    // clothes
+                    document.getElementById(pic).classList.remove('visible');
 
-                // chosen
-                document.getElementById(pic + 'mini').classList.remove('menu-item-chosen');
+                    // chosen
+                    document.getElementById(pic + 'mini').classList.remove('menu-item-chosen');
+                }
             }
 
             const buttons = document.getElementsByTagName("button");

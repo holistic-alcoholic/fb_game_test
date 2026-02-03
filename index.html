@@ -22,8 +22,9 @@
         }
 
         .description {
-            margin-top: 20px;
             font-size: 1.1em;
+            margin-top: 20px;
+            text-align: center;
         }
         
         .container {
@@ -286,7 +287,6 @@
 
         .canvas-container {
             position: relative;
-            background-color: red;
             border-radius: 8px;
             height: 80%;            
             aspect-ratio: 1;
@@ -371,7 +371,7 @@
 <body>
     <h2>Гардеробная Разумовского</h2>
 
-    <p class="description">Сережа опаздывает на свидание. Подбери ему идеальный образ!</p>
+    <span class="description">Сережа опаздывает на свидание. Подбери ему идеальный образ!</span>
     
     <div class="container">
         <div class="costume-container" id="costumeContainer">
@@ -426,7 +426,7 @@
                 <canvas id="picCanvas" style="height: 100%; width: 100%;" height="1200" width="1200"></canvas>
             </div>
 
-            <button id="savePicBtn">Сохранить картинку</button>
+            <button id="savePicBtn">Скачать результат</button>
         </div>
     </div>
 
@@ -785,7 +785,6 @@
             const canvas = document.getElementById('picCanvas');
             const ctx = canvas.getContext('2d');
             
-            // Store images and their opacity
             const images = [];
 
             let loadedCount = 0;
@@ -822,14 +821,12 @@
             });
             
             document.getElementById('savePicBtn').addEventListener('click', () => {
-                // Create a temporary link to download the canvas image
                 const link = document.createElement('a');
                 link.download = `composite-image-${Date.now()}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
             
-            // Return the modal for external control if needed
             return modal;
         }
         
@@ -846,19 +843,12 @@
             const layersIDs = sortedLayers.map(element => element.id + '.png');
 
             createModal(layersIDs);
-          
-
-            // const dataURL = canvas.toDataURL('image/png');
-            // const link = document.createElement('a');
-            // link.download = 'canvas-drawing.png';
-            // link.href = dataURL;
-            // link.click();
         });
         
         // Touch support for mobile
-        // document.getElementById('picCanvas').addEventListener('touchstart', (e) => {
-        //     e.preventDefault();
-        // });
+        document.getElementById('picCanvas').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+        });
         
         // Initialize the canvas with default content
         // initializeCanvas();

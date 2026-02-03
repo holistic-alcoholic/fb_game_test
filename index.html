@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Одевалка</title>
+    <title>Гардеробная Разумовского</title>
     <style>
         * {
             margin: 0;
@@ -240,6 +240,63 @@
             background: #2ecc71;
             color: white;
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            overflow: auto;
+        }
+        
+        .modal-window {
+            background-color: #fff;
+            margin: 5vh auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 70vh;
+            height: fit-content;
+            border-radius: 8px;
+            position: relative;
+
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            font-size: 30px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .canvas-container {
+            position: relative;
+            background-color: red;
+            border-radius: 8px;
+            height: 80%;            
+            aspect-ratio: 1;
+        }
+        
+        #picCanvas {
+            border: 1px solid #ddd;
+            background-color: white;
+            position: relative;
+        }
         
         @media (max-width: 768px) {
             .container {
@@ -316,7 +373,7 @@
               <option value="shirts">Верх</option>
               <option value="pants">Низ</option>
               <option value="shoes">Обувь</option>
-              <option value="dresses">Платья</option>
+              <option value="dresses">Полнорост</option>
               <option value="outerwear">Верхняя одежда</option>
               <option value="accessories">Аксессуары</option>
               <option value="hair">Прически</option>
@@ -344,13 +401,24 @@
 
         <div class="buttons">
             <button class="save-btn" id="saveBtn">Сохранить</button>
-            <button id="clearBtn" class="clear-btn">Очистить</button>
+            <button class="clear-btn" id="clearBtn">Очистить</button>
         </div>
     </div>
     
     </div>
 
-    
+    <div id="imageModal" class="modal">
+        <div class="modal-window">
+            <span class="close-btn">&times;</span>
+            <h3>вот итоговый результат сохраняй</h3>
+            
+            <div class="canvas-container">
+                <canvas id="picCanvas" style="height: 100%; width: 100%;" height="1200" width="1200"></canvas>
+            </div>
+
+            <button id="savePicBtn">Тык сюда</button>
+        </div>
+    </div>
 
     <script>
         const costumeContainer = document.getElementById('costumeContainer');
@@ -441,12 +509,12 @@
                 picID = setupPicture(`assets/accessories${i + 1}`);
                 accessories.push(picID);
 
-                document.getElementById(picID).style['z-index'] = 100; // на теле под одеждой / волосами
+                document.getElementById(picID).style['z-index'] = 160; // на теле под одеждой / волосами
                 if (i === 0) {
                     document.getElementById(picID).style['z-index'] = 500; // шляпа сверху всего
                 }
-                if (i === 2) {
-                    document.getElementById(picID).style['z-index'] = 160; // кулон на одежде
+                if (i === 1) {
+                    document.getElementById(picID).style['z-index'] = 100; // перчатки под кофтами
                 }
             }
             for (let i = 0; i < 4; i++) {
@@ -455,13 +523,13 @@
 
                 document.getElementById(picID).style['z-index'] = 1; // под всем
             }
-            for (let i = 0; i < 1; i++) {
+            for (let i = 0; i < 3; i++) {
                 picID = setupPicture(`assets/dresses${i + 1}`);
                 dresses.push(picID);
 
                 document.getElementById(picID).style['z-index'] = 110; // под кофтами
             }
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 4; i++) {
                 picID = setupPicture(`assets/hair${i + 1}`);
                 hair.push(picID);
 
@@ -569,8 +637,8 @@
                             }
                         }
 
-                        // снимаем старые штаны
-                        if (menuItem.id.includes('pants')) {
+                        // все штаны и платья не пересекаются
+                        if (menuItem.id.includes('pants') || menuItem.id.includes('dresses')) {
                             for (let pantsID of pants) {
                                 document.getElementById(pantsID).classList.remove('visible');
                                 document.getElementById(pantsID + 'mini').classList.remove('menu-item-chosen');
@@ -578,6 +646,14 @@
                             for (let dress of dresses) {
                                 document.getElementById(dress).classList.remove('visible');
                                 document.getElementById(dress + 'mini').classList.remove('menu-item-chosen');
+                            }
+                        }
+
+                        // комбинезоны
+                        if (['assets/dresses2mini', 'assets/dresses3mini'].includes(menuItem.id)) {
+                            for (let hairID of hair) {
+                                document.getElementById(hairID).classList.remove('visible');
+                                document.getElementById(hairID + 'mini').classList.remove('menu-item-chosen');
                             }
                         }
 
@@ -589,20 +665,25 @@
                             }
                         }
 
-                        // снимаем штаны раз надели платье
-                        if (menuItem.id.includes('dresses')) {
-                            for (let pantsID of pants) {
-                                document.getElementById(pantsID).classList.remove('visible');
-                                document.getElementById(pantsID + 'mini').classList.remove('menu-item-chosen');
-                            }
-                        }
-
                         // разные очки
                         if (['assets/accessories5mini', 'assets/accessories6mini'].includes(menuItem.id)) {
                             for (let glasses of ['assets/accessories5', 'assets/accessories6']) {
                                 document.getElementById(glasses).classList.remove('visible');
                                 document.getElementById(glasses + 'mini').classList.remove('menu-item-chosen');
                             }
+                        }
+
+                        // шляпа и комбезы не работают вместе
+                        if (menuItem.id.includes('accessories1')) {
+
+                            for (let combos of ['assets/dresses2', 'assets/dresses3']) {
+                                document.getElementById(combos).classList.remove('visible');
+                                document.getElementById(combos + 'mini').classList.remove('menu-item-chosen');
+                            }
+                        }
+                        if (['assets/dresses2mini', 'assets/dresses3mini'].includes(menuItem.id)) {
+                            document.getElementById('assets/accessories1').classList.remove('visible');
+                            document.getElementById('assets/accessories1mini').classList.remove('menu-item-chosen');
                         }
 
                         // разные фоны
@@ -666,6 +747,7 @@
                     choose('assets/accessories3');
                     break;
                 case 'Петровский':
+                    choose('assets/hair4');
                     choose('assets/shirts7');
                     choose('assets/pants7');
                     choose('assets/shoes3');
@@ -676,20 +758,97 @@
         }
 
         clearBtn.addEventListener('click', clearClothes); 
+
+        function createModal(imageSources) {
+            let modal = document.getElementById('imageModal');
+            
+            // закрытие окошка
+            modal.querySelector('.close-btn').addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            const canvas = document.getElementById('picCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Store images and their opacity
+            const images = [];
+
+            let loadedCount = 0;
+            const totalImages = imageSources.length;
+            
+            function updateCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                images.forEach((img, index) => {
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                });
+            }
+            
+            imageSources.forEach((src, index) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous'; // Handle CORS if needed
+                
+                img.onload = () => {
+                    images[index] = img;
+                    
+                    loadedCount++;
+                    if (loadedCount === totalImages) {
+                        updateCanvas();
+                        modal.style.display = 'block';
+                    }
+                };
+                
+                img.onerror = () => {
+                    loadedCount++;
+                    console.error(`Failed to load image: ${src}`);
+                };
+                
+                img.src = src;
+            });
+            
+            document.getElementById('savePicBtn').addEventListener('click', () => {
+                // Create a temporary link to download the canvas image
+                const link = document.createElement('a');
+                link.download = `composite-image-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+            
+            // Return the modal for external control if needed
+            return modal;
+        }
         
         // Save canvas as image
-        // saveBtn.addEventListener('click', () => {
-        //     const dataURL = canvas.toDataURL('image/png');
-        //     const link = document.createElement('a');
-        //     link.download = 'canvas-drawing.png';
-        //     link.href = dataURL;
-        //     link.click();
-        // });
+        saveBtn.addEventListener('click', () => {
+            const layers = Array.from(document.querySelectorAll('.visible'));
+          
+            const sortedLayers = layers.sort((a, b) => {
+                const zIndexA = parseInt(window.getComputedStyle(a).zIndex) || 0;
+                const zIndexB = parseInt(window.getComputedStyle(b).zIndex) || 0;
+                return zIndexA - zIndexB;
+            });
+          
+            const layersIDs = sortedLayers.map(element => element.id + '.png');
+
+            createModal(layersIDs);
+          
+
+            // const dataURL = canvas.toDataURL('image/png');
+            // const link = document.createElement('a');
+            // link.download = 'canvas-drawing.png';
+            // link.href = dataURL;
+            // link.click();
+        });
         
-        // // Touch support for mobile
-        // canvas.addEventListener('touchstart', (e) => {
-        //     e.preventDefault();
-        // });
+        // Touch support for mobile
+        document.getElementById('picCanvas').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+        });
         
         // Initialize the canvas with default content
         // initializeCanvas();

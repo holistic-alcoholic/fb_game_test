@@ -321,6 +321,7 @@
               <option value="accessories">Аксессуары</option>
               <option value="hair">Прически</option>
               <option value="body">Лицо и шрамы</option>
+              <option value="back">Фоны</option>
             </select>
 
             <div class="scroll-container">
@@ -372,6 +373,7 @@
         let outerwear = [];
         let hair = [];
         let body = [];
+        let backs = [];
         let clothes = [];
 
         let currentZ = 1;
@@ -422,10 +424,18 @@
         }
 
         function initializePictures() {
-            setupPicture('assets/back', true);
-            setupPicture('assets/start', true);
-
             let picID;
+
+            for (let i = 0; i < 4; i++) {
+                picID = setupPicture(`assets/back${i + 1}`);
+                backs.push(picID);
+
+                document.getElementById(picID).style['z-index'] = -1;
+            }
+            document.getElementById('assets/back1').classList.add('visible');
+            document.getElementById('assets/back1mini').classList.add('menu-item-chosen');
+
+            setupPicture('assets/start', true);
             
             for (let i = 0; i < 6; i++) {
                 picID = setupPicture(`assets/accessories${i + 1}`);
@@ -592,6 +602,14 @@
                             for (let glasses of ['assets/accessories5', 'assets/accessories6']) {
                                 document.getElementById(glasses).classList.remove('visible');
                                 document.getElementById(glasses + 'mini').classList.remove('menu-item-chosen');
+                            }
+                        }
+
+                        // разные фоны
+                        if (menuItem.id.includes('back')) {
+                            for (let backID of backs) {
+                                document.getElementById(backID).classList.remove('visible');
+                                document.getElementById(backID + 'mini').classList.remove('menu-item-chosen');
                             }
                         }
 

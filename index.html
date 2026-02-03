@@ -148,53 +148,97 @@
         }
 
         .menu-item-chosen {
-            border-color: rgb(146,110,174); /*#4a90e2;*/
-            background-color: rgba(146,110,174, 0.2); /*rgba(74, 144, 226, 0.2);*/
+            border-color: #9476ce;
+            background-color: rgba(146,110,174, 0.2);
         }
 
         .menu-item:hover, .menu-item:active {
-            border-color: rgb(146,110,174); /*#4a90e2;*/
+            border-color: #9476ce;
             transform: scale(1.03);
         }
 
         .controls {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            margin-top: 10px;
+            width: 100%;
             max-width: 100vh;
+            gap: 10px;
+        }
+
+        .outfits {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            width: fit-content;
+        }
+
+        .outfits-scroll-container {
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            border: 1px solid #666;
+            border-radius: 8px;
+        }
+        
+        .outfits-scroll-container::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        
+        .outfits-scroll-container::-webkit-scrollbar-track {
+            border-radius: 8px;
+            margin: 5px;
+        }
+        
+        .outfits-scroll-container::-webkit-scrollbar-thumb {
+            background: #aaa;
+            border-radius: 8px;
+        }
+
+        .buttons {
+            display: flex;
             gap: 15px;
-            margin-top: 20px;
+            padding-top: 11px;
+            padding-bottom: 15px;
         }
         
         button {
             padding: 8px 15px;
-            background-color: rgb(120,81,169);
-            color: white;
-            border: none;
+            background-color: white;
+            color: #9476ce;
+            border: 2px solid #9476ce;
             border-radius: 4px;
             cursor: pointer;
             font-size: 1rem;
             font-family: 'Charter';
+            white-space: nowrap;
         }
         
-        button:hover {
-            background-color: rgb(84,57,100);
+        button:hover, .button-chosen {
+            background-color: #9476ce;
+            color: white;
         }
         
         .clear-btn {
-            background: rgb(203,65,84);
+            background: white;
+            border-color: #e26337;
+            color: #e26337;
         }
         
         .clear-btn:hover {
-            background: rgba(161,35,18);
+            background: #e26337;
+            color: white;
         }
 
         .save-btn {
-            background: rgb(19,136,8);
+            border: 2px solid #2ecc71;
+            background-color: white;
+            color: #2ecc71;
         }
         
         .save-btn:hover {
-            background: rgba(40,114,51);
+            background: #2ecc71;
+            color: white;
         }
         
         @media (max-width: 768px) {
@@ -231,13 +275,36 @@
                 height: 100%;
                 width: auto;
             }
+
+            button {
+                font-size: 0.8rem;
+            }
+
+            .save-btn {
+                width: 100%;
+            }
+
+            .clear-btn {
+                width: 100%;
+            }
+
+            .buttons {
+                width: 100%;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+                gap: 0;
+            }
         }
     </style>
 </head>
 <body>
     <h2>Гардеробная Разумовского</h2>
 
-    <p class="description">Одень Серегу!</p>
+    <p class="description">Сережа опаздывает на свидание. Подбери ему идеальный образ!</p>
     
     <div class="container">
         <div class="costume-container" id="costumeContainer">
@@ -265,11 +332,21 @@
     </div>
 
     <div class="controls">
-            <button onclick="specialLook('Домашний')">Домашний образ</button>
-            <button onclick="specialLook('Петровский')">Петровский</button>
+        <div class="outfits-scroll-container">
+            <div class="outfits">
+            <button onclick="specialLook(event)">Домашний образ</button>
+            <button onclick="specialLook(event)">Петровский</button>
+            <button onclick="specialLook(event)">Петровский</button>
+            <button onclick="specialLook(event)">Петровский</button>
+            </div>
+        </div>
+
+        <div class="buttons">
             <button class="save-btn" id="saveBtn">Сохранить</button>
             <button id="clearBtn" class="clear-btn">Очистить</button>
         </div>
+    </div>
+    
     </div>
 
     
@@ -429,6 +506,12 @@
             document.getElementById('assets/hair1mini').classList.add('menu-item-chosen');
 
             imageMenu.addEventListener('click', (e) => {
+                // убираем луки
+                const buttons = document.getElementsByTagName("button");
+                for (const b of buttons) {
+                    b.classList.remove('button-chosen');
+                }
+                // что выбрали
                 let menuItem = e.target.closest('.menu-item');
                 
                 if (menuItem) {
@@ -529,15 +612,33 @@
                 document.getElementById(pic + 'mini').classList.remove('menu-item-chosen');
             }
 
+            const buttons = document.getElementsByTagName("button");
+            for (const b of buttons) {
+                b.classList.remove('button-chosen');
+            }
+
             document.getElementById('assets/hair1').classList.add('visible');
             document.getElementById('assets/hair1mini').classList.add('menu-item-chosen');
         }
 
-        function specialLook(name) {
+        function specialLook(event) {
+            if (event.target.className.includes('button-chosen')) {
+                clearClothes();
+
+                return;
+            }
+
             clearClothes();
 
-            switch (name) {
-                case 'Домашний':
+            const buttons = document.getElementsByTagName("button");
+            for (const b of buttons) {
+                b.classList.remove('button-chosen');
+            }
+
+            event.target.classList.add('button-chosen');
+
+            switch (event.target.textContent) {
+                case 'Домашний образ':
                     choose('assets/undies2');
                     choose('assets/undies11');
                     choose('assets/shirts6');
